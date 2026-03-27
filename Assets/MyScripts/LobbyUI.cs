@@ -7,6 +7,13 @@ public class LobbyUI : MonoBehaviour
 {
     [Header("UI References")]
     public TMP_InputField nameInput;
+    public TMP_Dropdown sceneDropdown;
+
+    [Tooltip("Scene that this lobby should load directly when Start is pressed.")]
+    public string targetSceneName = "TAI";
+
+    [Tooltip("Use dropdown selection instead of targetSceneName.")]
+    public bool useDropdownSelection = false;
 
     [Tooltip("Drag the prefab object that has ColorWheelControl on it.")]
     public ColorWheelControl colorWheel;
@@ -16,18 +23,43 @@ public class LobbyUI : MonoBehaviour
 
     private Color lastColor;
 
+    private readonly string[] sceneNames =
+    {
+        "TAI_Classroom01_NoNPC",
+        "TAI_Classroom01_NPC",
+        "TAI_Classroom02_NoNPC",
+        "TAI_Classroom02_NPC",
+        "TAI_Classroom03_NoNPC",
+        "TAI_Classroom03_NPC",
+        "TAI_Classroom04_NoNPC",
+        "TAI_Classroom04_NPC"
+    };
+
     private void Start()
     {
-        // Initialize wheel from saved ClientData (if available)
+        if (sceneDropdown != null)
+        {
+            sceneDropdown.ClearOptions();
+            sceneDropdown.AddOptions(new System.Collections.Generic.List<string>
+            {
+                "Classroom 1 - No NPC",
+                "Classroom 1 - NPC",
+                "Classroom 2 - No NPC",
+                "Classroom 2 - NPC",
+                "Classroom 3 - No NPC",
+                "Classroom 3 - NPC",
+                "Classroom 4 - No NPC",
+                "Classroom 4 - NPC"
+            });
+        }
+
         if (ClientData.Instance != null)
         {
             lastColor = ClientData.Instance.PlayerColor;
 
             if (colorWheel != null)
             {
-                colorWheel.PickColor(lastColor); // sets wheel UI + internal state
-                // Important: PickColor updates the wheel state, Selection will be updated during Update/drag,
-                // so we also refresh preview and data now:
+                colorWheel.PickColor(lastColor);
             }
 
             ApplyColorToClientData(lastColor);
@@ -44,7 +76,6 @@ public class LobbyUI : MonoBehaviour
         if (colorWheel == null || ClientData.Instance == null)
             return;
 
-        // Read current selected color from the wheel
         Color current = colorWheel.Selection;
 
         if (current != lastColor)
@@ -72,6 +103,19 @@ public class LobbyUI : MonoBehaviour
     public void StartGame()
     {
         SaveName();
-        SceneManager.LoadScene("TAI"); // keep your scene name
+
+        string sceneToLoad = targetSceneName;
+
+        if (useDropdownSelection && sceneDropdown != null)
+        {
+            int index = sceneDropdown.value;
+
+            if (index >= 0 && index < sceneNames.Length)
+            {
+                sceneToLoad = sceneNames[index];
+            }
+        }
+
+        SceneManager.LoadScene(sceneToLoad);
     }
 }

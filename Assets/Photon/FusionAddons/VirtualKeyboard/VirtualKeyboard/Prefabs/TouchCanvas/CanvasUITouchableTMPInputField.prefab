@@ -71,10 +71,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f5302b9340ff22042a5825543f736da1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  touchable: {fileID: 0}
-  box: {fileID: 0}
+  disableVirtualKeyboardOnAndroid: 0
+  touchable: {fileID: 6990855838688757043}
+  box: {fileID: 1267839987554755311}
   inputFieldRectTransform: {fileID: 0}
-  rectTransform: {fileID: 0}
+  rectTransform: {fileID: 1267839987554755308}
   inputfield: {fileID: 0}
   defaultWidth: 100
   defaultHeight: 100

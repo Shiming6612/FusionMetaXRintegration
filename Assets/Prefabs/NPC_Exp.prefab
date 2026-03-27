@@ -86,7 +86,6 @@ GameObject:
   - component: {fileID: 5753706810084763693}
   - component: {fileID: 3629330756281281907}
   - component: {fileID: 142364373452853238}
-  - component: {fileID: 7610156884341128488}
   - component: {fileID: 9200370734295270355}
   - component: {fileID: 7470264112115374145}
   m_Layer: 0
@@ -226,20 +225,6 @@ MonoBehaviour:
   SyncParent: 0
   _autoAOIOverride: 1
   DisableSharedModeInterpolation: 0
---- !u!114 &7610156884341128488
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2805899961974193913}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1541381998, guid: e725a070cec140c4caffb81624c8c787, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Guid:
-    RawGuidValue: 1f3ffce770f3cf1499d10883b5fe3db5
 --- !u!54 &9200370734295270355
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -283,8 +268,21 @@ MonoBehaviour:
   waypoints: []
   waypointTolerance: 0.6
   loopWaypoints: 1
+  startAtFirstWaypoint: 1
+  warpToNavMeshIfNeeded: 1
+  navMeshWarpSearchRadius: 2
+  logNavMeshDebug: 0
+  applyAgentTuningOnAuthority: 1
+  agentSpeed: 1.2
+  agentAcceleration: 6
+  agentAngularSpeed: 360
+  agentStoppingDistance: 0.1
+  agentAutoBraking: 1
   lookAtDistance: 2
   turnSpeed: 2
+  faceMoveDirection: 1
+  minSpeedToUseVelocityFacing: 0.05
+  useDesiredVelocityForFacing: 1
   animator: {fileID: 2717885466382052722}
   speedParam: Speed
   animSpeedMultiplier: 1
