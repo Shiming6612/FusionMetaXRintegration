@@ -126,6 +126,15 @@ public class DropSelectionManager : MonoBehaviour
             Debug.Log(_selected != null ? $"[DropSelection] Selected: {_selected.name}" : "[DropSelection] Selected: None");
 
         OnSelectionChanged?.Invoke(_selected);
+
+        if (_selected != null)
+        {
+            BottomTutorialController tutorial = FindFirstObjectByType<BottomTutorialController>();
+            if (tutorial != null)
+            {
+                tutorial.NotifyDropSelected();
+            }
+        }
     }
 
     private bool GetSelectDown()

@@ -9171,7 +9171,8 @@ PrefabInstance:
       value: Classroom3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: -7882446982521369593, guid: 62a83dbe3dd2fdf459d91a1d2d8128c8, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: -1536936824137878749, guid: 62a83dbe3dd2fdf459d91a1d2d8128c8, type: 3}

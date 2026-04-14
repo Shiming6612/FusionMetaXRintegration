@@ -4,10 +4,12 @@ using UnityEngine;
 
 public class LegendUIController : MonoBehaviour
 {
+    [Header("Refs")]
     public DropSelectionManager selectionManager;
     public VoltageKnobInput voltageSource;
     public ElectricFieldVolume fieldVolume;
 
+    [Header("UI")]
     public CanvasGroup panelGroup;
     public TMP_Text titleText;
     public TMP_Text massText;
@@ -15,12 +17,14 @@ public class LegendUIController : MonoBehaviour
     public TMP_Text voltageText;
     public TMP_Text hintText;
 
+    [Header("Correct State")]
     public float toleranceV = 5f;
     public Color correctColor = Color.green;
     public float correctFontSizeMultiplier = 1.25f;
     public AudioSource correctSfxSource;
     public AudioClip correctSfx;
 
+    [Header("Debug")]
     public bool logDebug;
 
     private bool wasCorrect;
@@ -32,6 +36,13 @@ public class LegendUIController : MonoBehaviour
     private SelectableDrop lastSelected;
     private readonly Dictionary<SelectableDrop, int> runtimeIds = new Dictionary<SelectableDrop, int>();
     private int nextRuntimeId = 1;
+
+    private BottomTutorialController tutorialController;
+
+    private void Awake()
+    {
+        tutorialController = FindFirstObjectByType<BottomTutorialController>();
+    }
 
     private void OnEnable()
     {
@@ -64,9 +75,11 @@ public class LegendUIController : MonoBehaviour
     private void HandleSelectionChanged(SelectableDrop sel)
     {
         if (logDebug)
+        {
             Debug.Log(sel != null
                 ? $"[LegendUI] OnSelectionChanged -> {sel.name}"
                 : "[LegendUI] OnSelectionChanged -> None");
+        }
 
         lastSelected = sel;
         RefreshAll();
@@ -83,6 +96,7 @@ public class LegendUIController : MonoBehaviour
             if (massText) massText.text = "Mass: --";
             if (chargeText) chargeText.text = "Charge: --";
             if (hintText) hintText.text = "";
+
             wasCorrect = false;
             RestoreStyle();
             RefreshVoltage(null);
@@ -118,29 +132,59 @@ public class LegendUIController : MonoBehaviour
         CacheBaseStyle();
 
         float v = voltageSource ? voltageSource.CurrentVoltage : 0f;
-        if (fieldVolume != null && fieldVolume.invertVoltage) v = -v;
+        if (fieldVolume != null && fieldVolume.invertVoltage)
+            v = -v;
 
         if (voltageText)
             voltageText.text = voltageSource ? $"Voltage: {v:0.0} V" : "Voltage: --";
 
         float hoverV = 0f;
         bool can = sel != null && TryHoverVoltage(sel, out hoverV);
+
+        // 只比较绝对值，因为面板和成功判定只关心所需电压大小
         bool correct = can && voltageSource != null && Mathf.Abs(Mathf.Abs(v) - hoverV) <= toleranceV;
 
-        if (correct) ApplyCorrectStyle();
-        else RestoreStyle();
+        if (correct)
+            ApplyCorrectStyle();
+        else
+            RestoreStyle();
 
-        if (correct && !wasCorrect && correctSfxSource != null && correctSfx != null)
-            correctSfxSource.PlayOneShot(correctSfx);
+        // 只在“刚刚变成正确”这一刻触发一次
+        if (correct && !wasCorrect)
+        {
+            if (correctSfxSource != null && correctSfx != null)
+                correctSfxSource.PlayOneShot(correctSfx);
+
+            if (tutorialController == null)
+                tutorialController = FindFirstObjectByType<BottomTutorialController>();
+
+            if (tutorialController != null)
+                tutorialController.NotifyVoltageSolved();
+
+            if (logDebug)
+                Debug.Log($"[LegendUI] Correct voltage reached. HoverV={hoverV:0.0}, CurrentV={Mathf.Abs(v):0.0}");
+        }
 
         wasCorrect = correct;
 
         if (hintText)
         {
-            if (!can || voltageSource == null) hintText.text = "";
-            else if (Mathf.Abs(v) > hoverV + toleranceV) hintText.text = "State: Rise";
-            else if (Mathf.Abs(v) < hoverV - toleranceV) hintText.text = "State: Fall";
-            else hintText.text = "State: Hover";
+            if (!can || voltageSource == null)
+            {
+                hintText.text = "";
+            }
+            else if (Mathf.Abs(v) > hoverV + toleranceV)
+            {
+                hintText.text = "State: Rise";
+            }
+            else if (Mathf.Abs(v) < hoverV - toleranceV)
+            {
+                hintText.text = "State: Fall";
+            }
+            else
+            {
+                hintText.text = "State: Hover";
+            }
         }
     }
 
@@ -169,7 +213,8 @@ public class LegendUIController : MonoBehaviour
         if (rb != null)
         {
             var od = rb.GetComponent<OilDrop>();
-            if (od != null) g = od.customGravity;
+            if (od != null)
+                g = od.customGravity;
         }
 
         float gAlong = Mathf.Abs(Vector3.Dot(g, dir));
@@ -216,6 +261,7 @@ public class LegendUIController : MonoBehaviour
     private void CacheBaseStyle()
     {
         if (cached || voltageText == null) return;
+
         baseColor = voltageText.color;
         baseSize = voltageText.fontSize;
         baseStyle = voltageText.fontStyle;

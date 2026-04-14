@@ -48,9 +48,6 @@ public class VoltageKnobInput : MonoBehaviour
     public float deadzoneDegrees = 3f;
     public float smoothing = 12f;
 
-    [Header("Grab Gating")]
-    public float maxGrabDistance = 2f;
-
     [Header("Snapping")]
     public bool snapToStep = true;
     public float voltageStep = 1f;
@@ -178,7 +175,7 @@ public class VoltageKnobInput : MonoBehaviour
         SetVoltage(smoothVoltage);
 
         if (debugLogs)
-            Debug.Log($"[VoltageKnobInput] grabbed={grabbed}, fineTune={IsLeftXHeld()}, accumDeg={accumDeg:F2}, V={CurrentVoltage:F0}");
+            Debug.Log($"[VoltageKnobInput] grabbed={grabbed}, fineTune={IsLeftXHeld()}, accumDeg={accumDeg:F2}, V={CurrentVoltage:F1}");
     }
 
     public void BeginGrab()
@@ -247,7 +244,10 @@ public class VoltageKnobInput : MonoBehaviour
             return null;
 
         foreach (var v in views)
-            if (v is Component c) return c.transform;
+        {
+            if (v is Component c)
+                return c.transform;
+        }
 
         return null;
     }
@@ -294,7 +294,7 @@ public class VoltageKnobInput : MonoBehaviour
         Transform best = null;
         float bestDist = float.MaxValue;
 
-        foreach (var t in cachedInteractors)
+        foreach (Transform t in cachedInteractors)
         {
             if (t == null) continue;
 
@@ -433,7 +433,7 @@ public class VoltageKnobInput : MonoBehaviour
             if (useEmissionHighlight && hasEmissionProps[i])
             {
                 runtimeMats[i].EnableKeyword("_EMISSION");
-                runtimeMats[i].SetColor(EmissionColorID, color * emissionIntensity);
+                runtimeMats[i].SetColor(EmissionColorID, color * grabbedEmissionIntensity);
             }
         }
     }

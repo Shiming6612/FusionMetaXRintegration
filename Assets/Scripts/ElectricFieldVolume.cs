@@ -8,7 +8,10 @@ public class ElectricFieldVolume : MonoBehaviour
     public bool invertVoltage;
     public Transform upperPlate;
     public Transform lowerPlate;
-    public float plateSpacingMetersOverride = 0.01f;
+
+    [Tooltip("Plate spacing in meters. 0.006 m = 6 mm")]
+    public float plateSpacingMetersOverride = 0.006f;
+
     public float fieldScale = 1f;
     public Vector3 fieldDirection = new Vector3(0, 1, 0);
     public float voltageSmoothing = 20f;

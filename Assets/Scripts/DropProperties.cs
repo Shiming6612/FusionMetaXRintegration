@@ -3,12 +3,15 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class DropProperties : MonoBehaviour
 {
+    [Header("Mass Range (kg)")]
     public float minMassKg = 4.5e-16f;
     public float maxMassKg = 1.3e-15f;
 
+    [Header("Charge Range (multiples of e)")]
     public int minChargeMultiple = 1;
     public int maxChargeMultiple = 5;
 
+    [Header("Options")]
     public bool randomizeOnSpawn = false;
     public bool applyMassToRigidbody = true;
 

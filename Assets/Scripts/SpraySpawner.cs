@@ -48,7 +48,7 @@ public class SpraySpawner : MonoBehaviour
         want = Mathf.Min(want, maxTotalDrops - _spawnedCount);
         if (want <= 0) return;
 
-        PlayNozzleFeedback(); // <- once per squeeze
+        PlayNozzleFeedback();
 
         if (_burstRoutine != null) StopCoroutine(_burstRoutine);
         _burstRoutine = StartCoroutine(SpawnBurst(want));
@@ -60,7 +60,10 @@ public class SpraySpawner : MonoBehaviour
         _burstRoutine = null;
 
         for (int i = 0; i < _spawned.Count; i++)
-            if (_spawned[i] != null) Destroy(_spawned[i].gameObject);
+        {
+            if (_spawned[i] != null)
+                Destroy(_spawned[i].gameObject);
+        }
 
         _spawned.Clear();
         _spawnedCount = 0;
@@ -73,7 +76,9 @@ public class SpraySpawner : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             SpawnOne();
-            if (dt > 0f) yield return new WaitForSeconds(dt);
+
+            if (dt > 0f)
+                yield return new WaitForSeconds(dt);
         }
 
         _burstRoutine = null;
@@ -86,7 +91,8 @@ public class SpraySpawner : MonoBehaviour
         _spawnedCount++;
 
         var props = drop.GetComponent<DropProperties>();
-        if (props != null) props.RandomizeAndApply();
+        if (props != null)
+            props.RandomizeAndApply();
 
         Vector2 p = Random.insideUnitCircle * spawnRadius;
         Vector3 pos = spawnOrigin.position + spawnOrigin.right * p.x + spawnOrigin.up * p.y;
@@ -102,6 +108,12 @@ public class SpraySpawner : MonoBehaviour
         Vector3 lateral = Vector3.ProjectOnPlane(Random.onUnitSphere, dir).normalized * lateralJitterSpeed;
 
         drop.Launch(pos, dir * speed + lateral);
+
+        BottomTutorialController tutorial = FindFirstObjectByType<BottomTutorialController>();
+        if (tutorial != null)
+        {
+            tutorial.NotifyDropletTriggered();
+        }
     }
 
     void PlayNozzleFeedback()
@@ -122,12 +134,14 @@ public class SpraySpawner : MonoBehaviour
             float lifeMax = main.startLifetime.constantMax;
             destroyAfter = Mathf.Max(0.1f, main.duration + lifeMax + 0.2f);
         }
+
         Destroy(vfx.gameObject, destroyAfter);
     }
 
     static Vector3 RandomDirectionInCone(Vector3 forward, float coneHalfAngleDeg)
     {
-        if (coneHalfAngleDeg <= 0.001f) return forward.normalized;
+        if (coneHalfAngleDeg <= 0.001f)
+            return forward.normalized;
 
         float coneRad = coneHalfAngleDeg * Mathf.Deg2Rad;
         float cosMin = Mathf.Cos(coneRad);
