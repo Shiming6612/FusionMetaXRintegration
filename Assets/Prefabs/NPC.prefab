@@ -809,6 +809,16 @@ MonoBehaviour:
   - {fileID: 0}
   waypointTolerance: 0
   loopWaypoints: 1
+  startAtFirstWaypoint: 1
+  warpToNavMeshIfNeeded: 1
+  navMeshWarpSearchRadius: 2
+  logNavMeshDebug: 0
+  applyAgentTuningOnAuthority: 1
+  agentSpeed: 1.2
+  agentAcceleration: 6
+  agentAngularSpeed: 360
+  agentStoppingDistance: 0.1
+  agentAutoBraking: 1
   lookAtDistance: 0
   turnSpeed: 2
   faceMoveDirection: 1
@@ -877,7 +887,7 @@ Transform:
   m_GameObject: {fileID: 3687373442263184434}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -0.146, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1241,7 +1251,7 @@ Transform:
   m_GameObject: {fileID: 4527684707952152069}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -0.14600003, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
