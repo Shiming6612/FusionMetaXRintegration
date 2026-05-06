@@ -4,21 +4,15 @@ using UnityEngine;
 
 public class SpraySpawner : MonoBehaviour
 {
-    private enum SpawnMode
-    {
-        Random,
-        TeachingFixedRadius
-    }
-
     [Header("Refs")]
     public Transform spawnOrigin;
     public Transform aimTarget;
     public OilDrop dropPrefab;
 
     [Header("Limits")]
-    public int maxTotalDrops = 15;
+    public int maxTotalDrops = 30;
     public int minDropsPerSpray = 3;
-    public int maxDropsPerSpray = 6;
+    public int maxDropsPerSpray = 5;
     public float burstDuration = 0.12f;
     public float minTimeBetweenSprays = 0.05f;
 
@@ -31,22 +25,31 @@ public class SpraySpawner : MonoBehaviour
     public float lateralJitterSpeed = 0.35f;
     public float upwardBias = 0.15f;
 
-    [Header("Teaching Radius Mode")]
-    public float[] teachingRadiiMicrometer = new float[] { 0.5f, 1.0f, 1.5f };
-    public int currentTeachingRadiusIndex = 0;
-    public float currentTeachingRadiusMicrometer = 1.0f;
+    [Header("Tutorial Radius Mode")]
+    public bool useTutorialRadiusMode = false;
+    public float tutorialRadiusMicrometer = 0.5f;
 
-    [Tooltip("How many drops are sprayed for each radius teaching group.")]
-    public int teachingDropsPerGroup = 15;
+    [Tooltip("If enabled, charge is calculated automatically so that the droplet can hover around the target voltage.")]
+    public bool autoChargeForTutorialRadius = true;
 
-    [Tooltip("Charge multiple used during radius teaching. 1 means 1e.")]
-    public int fixedChargeMultipleForTeaching = 1;
+    [Tooltip("Target voltage used to calculate a suitable charge for the tutorial radius task.")]
+    public float targetHoverVoltage = 500f;
 
-    [Tooltip("If enabled, old drops are removed when switching to another teaching radius.")]
-    public bool resetDropsWhenChangingTeachingRadius = true;
+    [Tooltip("Plate distance in meters. For this project: 6 mm = 0.006 m.")]
+    public float plateSpacingMeters = 0.006f;
 
-    [Header("Runtime Debug")]
-    [SerializeField] private SpawnMode currentSpawnMode = SpawnMode.Random;
+    [Tooltip("Used only when Auto Charge For Tutorial Radius is disabled.")]
+    public int fixedTutorialChargeMultiple = 1;
+
+    [Header("Tutorial Charge Limits")]
+    public int tutorialMinChargeMultiple = 1;
+    public int tutorialMaxChargeMultiple = 20;
+
+    [Header("Random Mode After Tutorial")]
+    public float randomMinRadiusMicrometer = 0.5f;
+    public float randomMaxRadiusMicrometer = 1.0f;
+    public int randomMinChargeMultiple = 3;
+    public int randomMaxChargeMultiple = 12;
 
     [Header("Nozzle Feedback")]
     public AudioSource nozzleSfxSource;
@@ -58,11 +61,6 @@ public class SpraySpawner : MonoBehaviour
     private float lastSprayTime = -999f;
     private Coroutine burstRoutine;
     private readonly List<OilDrop> spawnedDrops = new List<OilDrop>();
-
-    public bool IsTeachingModeActive()
-    {
-        return currentSpawnMode == SpawnMode.TeachingFixedRadius;
-    }
 
     public void SprayOnce()
     {
@@ -77,17 +75,7 @@ public class SpraySpawner : MonoBehaviour
 
         lastSprayTime = Time.time;
 
-        int wantedCount;
-
-        if (currentSpawnMode == SpawnMode.TeachingFixedRadius)
-        {
-            wantedCount = Mathf.Max(1, teachingDropsPerGroup);
-        }
-        else
-        {
-            wantedCount = Random.Range(minDropsPerSpray, maxDropsPerSpray + 1);
-        }
-
+        int wantedCount = Random.Range(minDropsPerSpray, maxDropsPerSpray + 1);
         wantedCount = Mathf.Min(wantedCount, maxTotalDrops - spawnedCount);
 
         if (wantedCount <= 0)
@@ -118,39 +106,64 @@ public class SpraySpawner : MonoBehaviour
         spawnedCount = 0;
     }
 
-    public void SetTeachingRadiusStep(int index)
+    public void EnableTutorialRadiusMode()
     {
-        if (teachingRadiiMicrometer == null || teachingRadiiMicrometer.Length == 0)
-        {
-            Debug.LogWarning("[SpraySpawner] Teaching radii list is empty.");
-            return;
-        }
-
-        currentTeachingRadiusIndex = Mathf.Clamp(index, 0, teachingRadiiMicrometer.Length - 1);
-        currentTeachingRadiusMicrometer = teachingRadiiMicrometer[currentTeachingRadiusIndex];
-
-        currentSpawnMode = SpawnMode.TeachingFixedRadius;
-
-        if (resetDropsWhenChangingTeachingRadius)
-            ResetAllDrops();
-
-        Debug.Log(
-            $"[SpraySpawner] Teaching mode ON. Radius = {currentTeachingRadiusMicrometer:0.00} µm, " +
-            $"Charge = {fixedChargeMultipleForTeaching}e, Drops = {teachingDropsPerGroup}"
-        );
+        useTutorialRadiusMode = true;
+        ResetAllDrops();
     }
 
-    public void DisableTeachingRadiusMode()
+    public void DisableTutorialRadiusMode()
     {
-        currentSpawnMode = SpawnMode.Random;
-        Debug.Log("[SpraySpawner] Teaching mode OFF. New drops will be random.");
+        useTutorialRadiusMode = false;
+    }
+
+    public void SetTutorialRadiusMicrometer(float radiusMicrometer, bool clearExistingDrops)
+    {
+        useTutorialRadiusMode = true;
+        tutorialRadiusMicrometer = Mathf.Clamp(radiusMicrometer, 0.1f, 5.0f);
+
+        if (clearExistingDrops)
+            ResetAllDrops();
+    }
+
+    public void SetTutorialRadiusStep(int index)
+    {
+        useTutorialRadiusMode = true;
+
+        if (index == 0)
+            tutorialRadiusMicrometer = 0.5f;
+        else if (index == 1)
+            tutorialRadiusMicrometer = 1.0f;
+        else if (index == 2)
+            tutorialRadiusMicrometer = 1.5f;
+
+        ResetAllDrops();
+    }
+
+    public void SetTeachingRadiusStep(int index)
+    {
+        SetTutorialRadiusStep(index);
+    }
+
+    public void SetTutorialRadius05()
+    {
+        SetTutorialRadiusStep(0);
+    }
+
+    public void SetTutorialRadius10()
+    {
+        SetTutorialRadiusStep(1);
+    }
+
+    public void SetTutorialRadius15()
+    {
+        SetTutorialRadiusStep(2);
     }
 
     public void ReturnToRandomModeAndClearDrops()
     {
-        currentSpawnMode = SpawnMode.Random;
+        useTutorialRadiusMode = false;
         ResetAllDrops();
-        Debug.Log("[SpraySpawner] Returned to random mode and cleared all drops.");
     }
 
     private IEnumerator SpawnBurst(int count)
@@ -168,72 +181,85 @@ public class SpraySpawner : MonoBehaviour
         }
 
         burstRoutine = null;
+    }
+
+    private void SpawnOne()
+    {
+        OilDrop drop = Instantiate(dropPrefab);
+        spawnedDrops.Add(drop);
+        spawnedCount++;
+
+        ApplyDropProperties(drop);
+
+        Vector2 randomOffset = Random.insideUnitCircle * spawnRadius;
+        Vector3 position =
+            spawnOrigin.position +
+            spawnOrigin.right * randomOffset.x +
+            spawnOrigin.up * randomOffset.y;
+
+        Vector3 baseDirection = (useAimTarget && aimTarget != null)
+            ? (aimTarget.position - position).normalized
+            : spawnOrigin.forward;
+
+        baseDirection = (baseDirection + Vector3.up * upwardBias).normalized;
+        Vector3 direction = RandomDirectionInCone(baseDirection, coneAngle);
+
+        float speed = baseLaunchSpeed * (1f + Random.Range(-speedRandomPercent, speedRandomPercent));
+
+        Vector3 lateralDirection = Vector3.ProjectOnPlane(Random.onUnitSphere, direction);
+        Vector3 lateral = lateralDirection.sqrMagnitude > 0.0001f
+            ? lateralDirection.normalized * lateralJitterSpeed
+            : Vector3.zero;
+
+        drop.Launch(position, direction * speed + lateral);
 
         BottomTutorialController tutorial = FindFirstObjectByType<BottomTutorialController>();
         if (tutorial != null)
             tutorial.NotifyDropletTriggered();
     }
 
-    private void SpawnOne()
+    private void ApplyDropProperties(OilDrop drop)
     {
-        OilDrop drop = Instantiate(dropPrefab);
+        if (drop == null)
+            return;
 
-        spawnedDrops.Add(drop);
-        spawnedCount++;
+        DropProperties properties = drop.GetComponent<DropProperties>();
 
-        DropProperties props = drop.GetComponent<DropProperties>();
-        if (props == null)
-            props = drop.GetComponentInChildren<DropProperties>();
+        if (properties == null)
+            properties = drop.GetComponentInChildren<DropProperties>();
 
-        if (props != null)
+        if (properties == null)
+            return;
+
+        if (useTutorialRadiusMode)
         {
-            if (currentSpawnMode == SpawnMode.TeachingFixedRadius)
+            properties.minChargeMultiple = tutorialMinChargeMultiple;
+            properties.maxChargeMultiple = tutorialMaxChargeMultiple;
+
+            if (autoChargeForTutorialRadius)
             {
-                // Tutorial radius comparison:
-                // fixed radius + fixed charge
-                props.SetTeachingRadiusAndCharge(
-                    currentTeachingRadiusMicrometer,
-                    fixedChargeMultipleForTeaching
+                properties.ApplyRadiusAndAutoCharge(
+                    tutorialRadiusMicrometer,
+                    targetHoverVoltage,
+                    plateSpacingMeters
                 );
             }
             else
             {
-                // Normal experiment:
-                // random radius/mass + random charge
-                // visual scale is also applied according to the random radius
-                props.RandomizeAndApply();
+                properties.ApplyRadiusAndCharge(
+                    tutorialRadiusMicrometer,
+                    fixedTutorialChargeMultiple
+                );
             }
         }
         else
         {
-            Debug.LogWarning("[SpraySpawner] Spawned drop has no DropProperties component.");
+            properties.minRadiusMicrometer = randomMinRadiusMicrometer;
+            properties.maxRadiusMicrometer = randomMaxRadiusMicrometer;
+            properties.minChargeMultiple = randomMinChargeMultiple;
+            properties.maxChargeMultiple = randomMaxChargeMultiple;
+            properties.RandomizeAndApply();
         }
-
-        Vector2 randomOffset = Random.insideUnitCircle * spawnRadius;
-
-        Vector3 spawnPosition =
-            spawnOrigin.position +
-            spawnOrigin.right * randomOffset.x +
-            spawnOrigin.up * randomOffset.y;
-
-        Vector3 baseDirection = (useAimTarget && aimTarget != null)
-            ? (aimTarget.position - spawnPosition).normalized
-            : spawnOrigin.forward;
-
-        baseDirection = (baseDirection + Vector3.up * upwardBias).normalized;
-
-        Vector3 launchDirection = RandomDirectionInCone(baseDirection, coneAngle);
-
-        float launchSpeed = baseLaunchSpeed *
-                            (1f + Random.Range(-speedRandomPercent, speedRandomPercent));
-
-        Vector3 lateralJitter =
-            Vector3.ProjectOnPlane(Random.onUnitSphere, launchDirection).normalized *
-            lateralJitterSpeed;
-
-        Vector3 launchVelocity = launchDirection * launchSpeed + lateralJitter;
-
-        drop.Launch(spawnPosition, launchVelocity);
     }
 
     private void PlayNozzleFeedback()
@@ -244,16 +270,11 @@ public class SpraySpawner : MonoBehaviour
         if (nozzleVfxPrefab == null)
             return;
 
-        Transform effectTransform = nozzlePoint != null
+        Transform target = nozzlePoint != null
             ? nozzlePoint
-            : (spawnOrigin != null ? spawnOrigin : transform);
+            : spawnOrigin != null ? spawnOrigin : transform;
 
-        ParticleSystem vfx = Instantiate(
-            nozzleVfxPrefab,
-            effectTransform.position,
-            effectTransform.rotation
-        );
-
+        ParticleSystem vfx = Instantiate(nozzleVfxPrefab, target.position, target.rotation);
         vfx.Play();
 
         float destroyAfter = 2f;
@@ -261,8 +282,8 @@ public class SpraySpawner : MonoBehaviour
 
         if (!main.loop)
         {
-            float lifetimeMax = main.startLifetime.constantMax;
-            destroyAfter = Mathf.Max(0.1f, main.duration + lifetimeMax + 0.2f);
+            float lifetime = main.startLifetime.constantMax;
+            destroyAfter = Mathf.Max(0.1f, main.duration + lifetime + 0.2f);
         }
 
         Destroy(vfx.gameObject, destroyAfter);
@@ -280,12 +301,12 @@ public class SpraySpawner : MonoBehaviour
         float theta = Random.Range(0f, Mathf.PI * 2f);
         float r = Mathf.Sqrt(1f - z * z);
 
-        Vector3 localDirection = new Vector3(
+        Vector3 local = new Vector3(
             r * Mathf.Cos(theta),
             r * Mathf.Sin(theta),
             z
         );
 
-        return Quaternion.FromToRotation(Vector3.forward, forward.normalized) * localDirection;
+        return Quaternion.FromToRotation(Vector3.forward, forward.normalized) * local;
     }
 }

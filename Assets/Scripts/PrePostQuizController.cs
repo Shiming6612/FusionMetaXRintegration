@@ -1,0 +1,458 @@
+﻿using System;
+using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class PrePostQuizController : MonoBehaviour
+{
+    [Serializable]
+    public class QuizQuestion
+    {
+        [TextArea(2, 5)] public string question;
+        [TextArea(1, 3)] public string answerA;
+        [TextArea(1, 3)] public string answerB;
+        [TextArea(1, 3)] public string answerC;
+        [Range(0, 2)] public int correctIndex;
+    }
+
+    public enum QuizMode
+    {
+        PreQuiz,
+        PostQuiz
+    }
+
+    [Header("Root")]
+    public GameObject wallRoot;
+    public GameObject quizGroup;
+    public GameObject resultGroup;
+
+    [Header("Texts")]
+    public TMP_Text modeText;
+    public TMP_Text questionCounterText;
+    public TMP_Text questionText;
+    public TMP_Text answerTextA;
+    public TMP_Text answerTextB;
+    public TMP_Text answerTextC;
+    public TMP_Text scoreText;
+    public TMP_Text resultText;
+    public TMP_Text continueText;
+
+    [Header("Buttons")]
+    public Button answerButtonA;
+    public Button answerButtonB;
+    public Button answerButtonC;
+    public Button continueButton;
+
+    [Header("Visual Feedback")]
+    public Color normalColor = Color.white;
+    public Color correctColor = Color.green;
+    public Color wrongColor = Color.red;
+    public float postFeedbackSeconds = 0.8f;
+
+    [Header("Flow")]
+    public bool startPreQuizOnStart = true;
+    public Behaviour[] behavioursToEnableAfterPreQuiz;
+    public GameObject[] objectsToEnableAfterPreQuiz;
+
+    private readonly List<QuizQuestion> questions = new List<QuizQuestion>();
+    private readonly List<int> preAnswers = new List<int>();
+    private readonly List<int> postAnswers = new List<int>();
+
+    private QuizMode currentMode;
+    private int currentQuestionIndex;
+    private int correctPostCount;
+    private bool waitingForPostFeedback;
+
+    private Image imageA;
+    private Image imageB;
+    private Image imageC;
+
+    private void Awake()
+    {
+        if (wallRoot == null)
+            wallRoot = gameObject;
+
+        CacheButtonImages();
+        SetupQuestions();
+        SetupButtons();
+    }
+
+    private void Start()
+    {
+        if (startPreQuizOnStart)
+            StartPreQuiz();
+        else
+            HideWall();
+    }
+
+    private void CacheButtonImages()
+    {
+        if (answerButtonA != null)
+            imageA = answerButtonA.GetComponent<Image>();
+
+        if (answerButtonB != null)
+            imageB = answerButtonB.GetComponent<Image>();
+
+        if (answerButtonC != null)
+            imageC = answerButtonC.GetComponent<Image>();
+    }
+
+    private void SetupButtons()
+    {
+        if (answerButtonA != null)
+        {
+            answerButtonA.onClick.RemoveAllListeners();
+            answerButtonA.onClick.AddListener(() => SelectAnswer(0));
+        }
+
+        if (answerButtonB != null)
+        {
+            answerButtonB.onClick.RemoveAllListeners();
+            answerButtonB.onClick.AddListener(() => SelectAnswer(1));
+        }
+
+        if (answerButtonC != null)
+        {
+            answerButtonC.onClick.RemoveAllListeners();
+            answerButtonC.onClick.AddListener(() => SelectAnswer(2));
+        }
+
+        if (continueButton != null)
+        {
+            continueButton.onClick.RemoveAllListeners();
+            continueButton.onClick.AddListener(ContinueAfterResult);
+        }
+    }
+
+    public void StartPreQuiz()
+    {
+        currentMode = QuizMode.PreQuiz;
+        currentQuestionIndex = 0;
+        correctPostCount = 0;
+        waitingForPostFeedback = false;
+
+        preAnswers.Clear();
+
+        SetAfterPreQuizUnlocked(false);
+        ShowWall();
+        ShowQuizGroup();
+        ShowCurrentQuestion();
+    }
+
+    public void StartPostQuiz()
+    {
+        currentMode = QuizMode.PostQuiz;
+        currentQuestionIndex = 0;
+        correctPostCount = 0;
+        waitingForPostFeedback = false;
+
+        postAnswers.Clear();
+
+        ShowWall();
+        ShowQuizGroup();
+        ShowCurrentQuestion();
+    }
+
+    private void ShowCurrentQuestion()
+    {
+        if (currentQuestionIndex < 0 || currentQuestionIndex >= questions.Count)
+        {
+            FinishQuiz();
+            return;
+        }
+
+        ResetButtonColors();
+        SetAnswerButtonsInteractable(true);
+
+        QuizQuestion q = questions[currentQuestionIndex];
+
+        if (modeText != null)
+            modeText.text = currentMode == QuizMode.PreQuiz
+                ? "Vorwissenstest"
+                : "Wissenstest nach dem Experiment";
+
+        if (questionCounterText != null)
+            questionCounterText.text = "Frage " + (currentQuestionIndex + 1) + "/" + questions.Count;
+
+        if (questionText != null)
+            questionText.text = q.question;
+
+        if (answerTextA != null)
+            answerTextA.text = "A. " + q.answerA;
+
+        if (answerTextB != null)
+            answerTextB.text = "B. " + q.answerB;
+
+        if (answerTextC != null)
+            answerTextC.text = "C. " + q.answerC;
+
+        if (scoreText != null)
+        {
+            if (currentMode == QuizMode.PreQuiz)
+                scoreText.text = "";
+            else
+                scoreText.text = correctPostCount + "/" + questions.Count;
+        }
+    }
+
+    private void SelectAnswer(int selectedIndex)
+    {
+        if (waitingForPostFeedback)
+            return;
+
+        QuizQuestion q = questions[currentQuestionIndex];
+
+        if (currentMode == QuizMode.PreQuiz)
+        {
+            preAnswers.Add(selectedIndex);
+            currentQuestionIndex++;
+            ShowCurrentQuestion();
+            return;
+        }
+
+        postAnswers.Add(selectedIndex);
+
+        bool isCorrect = selectedIndex == q.correctIndex;
+        if (isCorrect)
+            correctPostCount++;
+
+        ShowPostFeedback(selectedIndex, q.correctIndex);
+        SetAnswerButtonsInteractable(false);
+
+        if (scoreText != null)
+            scoreText.text = correctPostCount + "/" + questions.Count;
+
+        waitingForPostFeedback = true;
+        Invoke(nameof(GoToNextPostQuestion), postFeedbackSeconds);
+    }
+
+    private void GoToNextPostQuestion()
+    {
+        waitingForPostFeedback = false;
+        currentQuestionIndex++;
+        ShowCurrentQuestion();
+    }
+
+    private void ShowPostFeedback(int selectedIndex, int correctIndex)
+    {
+        ResetButtonColors();
+
+        SetButtonColor(correctIndex, correctColor);
+
+        if (selectedIndex != correctIndex)
+            SetButtonColor(selectedIndex, wrongColor);
+    }
+
+    private void FinishQuiz()
+    {
+        if (currentMode == QuizMode.PreQuiz)
+        {
+            SetAfterPreQuizUnlocked(true);
+            HideWall();
+            return;
+        }
+
+        ShowResultGroup();
+
+        if (resultText != null)
+            resultText.text = "Ergebnis: " + correctPostCount + "/" + questions.Count + " richtig.";
+
+        if (continueText != null)
+            continueText.text = "Weiter";
+    }
+
+    private void ContinueAfterResult()
+    {
+        HideWall();
+    }
+
+    private void ShowWall()
+    {
+        if (wallRoot != null)
+            wallRoot.SetActive(true);
+    }
+
+    private void HideWall()
+    {
+        if (wallRoot != null)
+            wallRoot.SetActive(false);
+    }
+
+    private void ShowQuizGroup()
+    {
+        if (quizGroup != null)
+            quizGroup.SetActive(true);
+
+        if (resultGroup != null)
+            resultGroup.SetActive(false);
+    }
+
+    private void ShowResultGroup()
+    {
+        if (quizGroup != null)
+            quizGroup.SetActive(false);
+
+        if (resultGroup != null)
+            resultGroup.SetActive(true);
+    }
+
+    private void ResetButtonColors()
+    {
+        if (imageA != null)
+            imageA.color = normalColor;
+
+        if (imageB != null)
+            imageB.color = normalColor;
+
+        if (imageC != null)
+            imageC.color = normalColor;
+    }
+
+    private void SetButtonColor(int index, Color color)
+    {
+        if (index == 0 && imageA != null)
+            imageA.color = color;
+        else if (index == 1 && imageB != null)
+            imageB.color = color;
+        else if (index == 2 && imageC != null)
+            imageC.color = color;
+    }
+
+    private void SetAnswerButtonsInteractable(bool interactable)
+    {
+        if (answerButtonA != null)
+            answerButtonA.interactable = interactable;
+
+        if (answerButtonB != null)
+            answerButtonB.interactable = interactable;
+
+        if (answerButtonC != null)
+            answerButtonC.interactable = interactable;
+    }
+
+    private void SetAfterPreQuizUnlocked(bool unlocked)
+    {
+        if (behavioursToEnableAfterPreQuiz != null)
+        {
+            for (int i = 0; i < behavioursToEnableAfterPreQuiz.Length; i++)
+            {
+                if (behavioursToEnableAfterPreQuiz[i] != null)
+                    behavioursToEnableAfterPreQuiz[i].enabled = unlocked;
+            }
+        }
+
+        if (objectsToEnableAfterPreQuiz != null)
+        {
+            for (int i = 0; i < objectsToEnableAfterPreQuiz.Length; i++)
+            {
+                if (objectsToEnableAfterPreQuiz[i] != null)
+                    objectsToEnableAfterPreQuiz[i].SetActive(unlocked);
+            }
+        }
+    }
+
+    private void SetupQuestions()
+    {
+        questions.Clear();
+
+        questions.Add(new QuizQuestion
+        {
+            question = "Wie war die zentrale Forschungsfrage, die Robert Millikan mit seinem Experiment beantworten wollte?",
+            answerA = "Können Öltröpfchen durch reine Lichtenergie in der Schwebe gehalten werden?",
+            answerB = "Wie groß ist die Masse eines Elektrons im Vergleich zu einem Öltröpfchen?",
+            answerC = "Ist elektrische Ladung diskret in unteilbaren Einheiten aufgebaut oder kontinuierlich?",
+            correctIndex = 2
+        });
+
+        questions.Add(new QuizQuestion
+        {
+            question = "Welche Beobachtung macht man beim Blick durch das Mikroskop auf die fallenden Tröpfchen?",
+            answerA = "Die Tröpfchen scheinen nach oben zu steigen, da das Mikroskop das Bild spiegelt.",
+            answerB = "Man kann die exakte Anzahl der Elektronen auf der Oberfläche des Tropfens sehen.",
+            answerC = "Die Tröpfchen erscheinen als farbige Ringe aufgrund der Lichtbrechung.",
+            correctIndex = 0
+        });
+
+        questions.Add(new QuizQuestion
+        {
+            question = "Warum schlug Millikans Doktorand Harvey Fletcher die Verwendung von Öl anstelle von Wasser vor?",
+            answerA = "Öltröpfchen bleiben stundenlang stabil und verdunsten nicht so schnell wie Wasser.",
+            answerB = "Öl lässt sich durch Reibung wesentlich schneller aufladen als Wasser.",
+            answerC = "Die Dichte von Öl entspricht exakt der Erdbeschleunigung g.",
+            correctIndex = 0
+        });
+
+        questions.Add(new QuizQuestion
+        {
+            question = "Wie wird im Millikan-Versuch der Radius r eines Öltröpfchens bestimmt?",
+            answerA = "Aus der Fallgeschwindigkeit des Tröpfchens bei ausgeschaltetem elektrischen Feld.",
+            answerB = "Durch die Messung der Zeit, die das Tröpfchen zum Schweben benötigt.",
+            answerC = "Durch das Ablesen an einer Skala direkt auf der Oberfläche des Zerstäubers.",
+            correctIndex = 0
+        });
+
+        questions.Add(new QuizQuestion
+        {
+            question = "Welcher Zustand muss erreicht sein, damit ein Tröpfchen in der Kammer schwebt?",
+            answerA = "Der Zerstäuber muss einen konstanten Luftstrom erzeugen, der das Tröpfchen trägt.",
+            answerB = "Die elektrische Kraft Fel muss die Gewichtskraft FG exakt ausgleichen.",
+            answerC = "Die Spannung muss auf den maximalen Wert der Spannungsquelle eingestellt sein.",
+            correctIndex = 1
+        });
+
+        questions.Add(new QuizQuestion
+        {
+            question = "Was besagt das Prinzip der Ladungsquantisierung?",
+            answerA = "Elektrische Ladung kann in beliebig kleine Bruchstücke unterteilt werden.",
+            answerB = "Jede gemessene Ladung ist immer ein ganzzahliges Vielfaches der Elementarladung e.",
+            answerC = "Die Ladung eines Tröpfchens nimmt stetig ab, je länger es in der Kammer schwebt.",
+            correctIndex = 1
+        });
+
+        questions.Add(new QuizQuestion
+        {
+            question = "Warum schloss Millikan bestimmte Messwerte aus seinen Veröffentlichungen aus, wie in seinen Notizbüchern entdeckt wurde?",
+            answerA = "Er wollte die Ergebnisse seines Doktoranden Harvey Fletcher absichtlich fälschen.",
+            answerB = "Er erkannte technische Fehler wie Luftzüge oder Erschütterungen während dieser Messungen.",
+            answerC = "Die ausgeschlossenen Werte waren mathematisch nicht berechenbar.",
+            correctIndex = 1
+        });
+
+        questions.Add(new QuizQuestion
+        {
+            question = "Welcher physikalische Parameter war für die leichte Abweichung von Millikans Wert (1,592 * 10-19 C) zum heutigen Standardwert verantwortlich?",
+            answerA = "Schwankungen im Magnetfeld der Erde in Chicago.",
+            answerB = "Ein ungenauer Literaturwert für die Luftviskosität η.",
+            answerC = "Die fehlerhafte Zählung der Tröpfchen im Histogramm.",
+            correctIndex = 1
+        });
+
+        questions.Add(new QuizQuestion
+        {
+            question = "Welche Rolle spielte Harvey Fletcher im Zusammenhang mit dem Nobelpreis von 1923?",
+            answerA = "Er war der schärfste Kritiker der Schwebemethode und versuchte den Versuch zu verhindern.",
+            answerB = "Er verzichtete vertraglich auf die Autorenschaft und wurde daher nicht mit dem Nobelpreis ausgezeichnet.",
+            answerC = "Er erhielt den Nobelpreis gemeinsam mit Millikan für die Entdeckung des Elektrons.",
+            correctIndex = 1
+        });
+
+        questions.Add(new QuizQuestion
+        {
+            question = "In welcher Einheit wird die Elementarladung e typischerweise angegeben?",
+            answerA = "Volt pro Meter (V/m).",
+            answerB = "Newton pro Kilogramm (N/kg).",
+            answerC = "Coulomb (C).",
+            correctIndex = 2
+        });
+
+        questions.Add(new QuizQuestion
+        {
+            question = "Welcher physikalische Zusammenhang wird durch das Stokes’sche Gesetz im Experiment genutzt?",
+            answerA = "Die elektrische Kraft auf ein Teilchen nimmt quadratisch mit der Entfernung zum Kondensator ab.",
+            answerB = "Die Masse eines Tröpfchens verringert sich proportional zu seiner Fallzeit.",
+            answerC = "Die Reibungskraft der Luft auf eine Kugel hängt direkt von deren Radius ab.",
+            correctIndex = 2
+        });
+    }
+}

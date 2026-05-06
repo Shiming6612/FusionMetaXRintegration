@@ -5,35 +5,22 @@ public class DropProperties : MonoBehaviour
 {
     [Header("Radius / Mass")]
     public float oilDensityKgPerM3 = 875.3f;
+    public float minRadiusMicrometer = 0.5f;
+    public float maxRadiusMicrometer = 1.0f;
 
-    [Tooltip("Used only in normal random mode.")]
-    public float minMassKg = 4.5e-16f;
-
-    [Tooltip("Used only in normal random mode.")]
-    public float maxMassKg = 1.3e-15f;
-
-    [Header("Charge Range (multiples of e)")]
+    [Header("Charge Range")]
     public int minChargeMultiple = 1;
-    public int maxChargeMultiple = 5;
+    public int maxChargeMultiple = 12;
 
     [Header("Options")]
-    [Tooltip("Keep this OFF if SpraySpawner controls spawning.")]
     public bool randomizeOnSpawn = false;
-
-    public bool applyMassToRigidbody = true;
+    public bool applyMassToRigidbody = false;
 
     [Header("Visual Radius")]
     public bool applyVisualScale = true;
-
-    [Tooltip("If empty, this object's transform will be scaled.")]
     public Transform visualRoot;
-
-    [Tooltip("Radius that corresponds to the original prefab size. Use 1.0 so r=1.0 µm is normal size.")]
     public float visualReferenceRadiusMicrometer = 1.0f;
-
-    [Tooltip("1 = direct scaling. With reference 1.0: 0.5 µm = 0.5x, 1.0 µm = 1x, 1.5 µm = 1.5x.")]
-    [Range(0.05f, 1.5f)]
-    public float visualScaleStrength = 1f;
+    public float visualScaleStrength = 1.0f;
 
     public float RadiusMicrometer { get; private set; }
     public float MassKg { get; private set; }
@@ -41,127 +28,102 @@ public class DropProperties : MonoBehaviour
     public int ChargeMultiple { get; private set; }
 
     private Rigidbody rb;
-    private Vector3 originalVisualScale;
-    private bool originalScaleCached;
+    private Vector3 initialVisualScale;
+    private bool visualScaleCached;
 
     private const double ElementaryCharge = 1.602176634e-19;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        CacheOriginalScale();
+
+        if (visualRoot == null)
+            visualRoot = transform;
+
+        CacheVisualScale();
     }
 
     private void OnEnable()
     {
-        CacheOriginalScale();
-
         if (randomizeOnSpawn)
             RandomizeAndApply();
     }
 
-    private void CacheOriginalScale()
-    {
-        if (originalScaleCached)
-            return;
-
-        Transform target = visualRoot != null ? visualRoot : transform;
-        originalVisualScale = target.localScale;
-        originalScaleCached = true;
-    }
-
     public void RandomizeAndApply()
     {
-        float minM = Mathf.Min(minMassKg, maxMassKg);
-        float maxM = Mathf.Max(minMassKg, maxMassKg);
+        float radius = Random.Range(
+            Mathf.Min(minRadiusMicrometer, maxRadiusMicrometer),
+            Mathf.Max(minRadiusMicrometer, maxRadiusMicrometer)
+        );
 
-        MassKg = Random.Range(minM, maxM);
-        RadiusMicrometer = CalculateRadiusMicrometerFromMass(MassKg);
+        int charge = Random.Range(
+            Mathf.Min(minChargeMultiple, maxChargeMultiple),
+            Mathf.Max(minChargeMultiple, maxChargeMultiple) + 1
+        );
 
-        RandomizeChargeOnly();
-
-        ApplyToRigidbody();
-        ApplyVisualScale();
-
-        Debug.Log($"[DropProperties] Random drop set: radius={RadiusMicrometer:0.00} µm, mass={MassKg:E3} kg, charge={ChargeMultiple}e");
+        ApplyRadiusAndCharge(radius, charge);
     }
 
-    public void SetTeachingRadiusAndCharge(float radiusMicrometer, int chargeMultiple)
+    public void ApplyRadiusAndCharge(float radiusMicrometer, int chargeMultiple)
     {
         RadiusMicrometer = Mathf.Max(0.01f, radiusMicrometer);
-        MassKg = CalculateMassKgFromRadiusMicrometer(RadiusMicrometer);
 
-        SetChargeMultipleAndApply(chargeMultiple);
-
-        ApplyToRigidbody();
-        ApplyVisualScale();
-
-        Debug.Log($"[DropProperties] Teaching drop set: radius={RadiusMicrometer:0.00} µm, mass={MassKg:E3} kg, charge={ChargeMultiple}e");
-    }
-
-    public void SetRadiusMicrometerAndApply(float radiusMicrometer, bool keepCurrentCharge = true)
-    {
-        RadiusMicrometer = Mathf.Max(0.01f, radiusMicrometer);
-        MassKg = CalculateMassKgFromRadiusMicrometer(RadiusMicrometer);
-
-        if (!keepCurrentCharge || ChargeMultiple <= 0)
-            RandomizeChargeOnly();
-
-        ApplyToRigidbody();
-        ApplyVisualScale();
-    }
-
-    public void SetChargeMultipleAndApply(int chargeMultiple)
-    {
         ChargeMultiple = Mathf.Max(1, chargeMultiple);
         ChargeC = (float)(ChargeMultiple * ElementaryCharge);
-    }
 
-    public void RandomizeChargeOnly()
-    {
-        int minQ = Mathf.Min(minChargeMultiple, maxChargeMultiple);
-        int maxQ = Mathf.Max(minChargeMultiple, maxChargeMultiple);
+        MassKg = CalculateMassFromRadius(RadiusMicrometer);
 
-        ChargeMultiple = Random.Range(minQ, maxQ + 1);
-        ChargeC = (float)(ChargeMultiple * ElementaryCharge);
-    }
-
-    private void ApplyToRigidbody()
-    {
         if (applyMassToRigidbody && rb != null)
             rb.mass = MassKg;
+
+        ApplyVisualRadius();
     }
 
-    private void ApplyVisualScale()
+    public void ApplyRadiusAndAutoCharge(
+        float radiusMicrometer,
+        float targetHoverVoltage,
+        float plateSpacingMeters,
+        float gravity = 9.81f)
     {
-        if (!applyVisualScale)
-            return;
+        float mass = CalculateMassFromRadius(radiusMicrometer);
+        float targetVoltage = Mathf.Max(1f, targetHoverVoltage);
+        float d = Mathf.Max(0.0001f, plateSpacingMeters);
 
-        CacheOriginalScale();
+        float requiredChargeC = mass * gravity * d / targetVoltage;
+        int chargeMultiple = Mathf.RoundToInt(requiredChargeC / (float)ElementaryCharge);
 
-        Transform target = visualRoot != null ? visualRoot : transform;
+        chargeMultiple = Mathf.Clamp(chargeMultiple, minChargeMultiple, maxChargeMultiple);
 
-        float reference = Mathf.Max(0.01f, visualReferenceRadiusMicrometer);
-        float rawRatio = RadiusMicrometer / reference;
-
-        float visualFactor = Mathf.Lerp(1f, rawRatio, visualScaleStrength);
-        visualFactor = Mathf.Clamp(visualFactor, 0.05f, 1.8f);
-
-        target.localScale = originalVisualScale * visualFactor;
+        ApplyRadiusAndCharge(radiusMicrometer, chargeMultiple);
     }
 
-    private float CalculateMassKgFromRadiusMicrometer(float radiusMicrometer)
+    private float CalculateMassFromRadius(float radiusMicrometer)
     {
         float r = radiusMicrometer * 1e-6f;
         float volume = (4f / 3f) * Mathf.PI * r * r * r;
         return oilDensityKgPerM3 * volume;
     }
 
-    private float CalculateRadiusMicrometerFromMass(float massKg)
+    private void CacheVisualScale()
     {
-        float m = Mathf.Max(1e-20f, massKg);
-        float volume = m / Mathf.Max(1e-6f, oilDensityKgPerM3);
-        float radiusMeter = Mathf.Pow((3f * volume) / (4f * Mathf.PI), 1f / 3f);
-        return radiusMeter * 1e6f;
+        if (visualRoot == null || visualScaleCached)
+            return;
+
+        initialVisualScale = visualRoot.localScale;
+        visualScaleCached = true;
+    }
+
+    private void ApplyVisualRadius()
+    {
+        if (!applyVisualScale || visualRoot == null)
+            return;
+
+        CacheVisualScale();
+
+        float reference = Mathf.Max(0.01f, visualReferenceRadiusMicrometer);
+        float radiusRatio = RadiusMicrometer / reference;
+        float scaleRatio = Mathf.Lerp(1f, radiusRatio, Mathf.Clamp01(visualScaleStrength));
+
+        visualRoot.localScale = initialVisualScale * scaleRatio;
     }
 }

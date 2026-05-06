@@ -29,7 +29,7 @@ public class BottomTutorialController : MonoBehaviour
     private bool tutorialSessionActive = false;
     private int currentStep = 0;
 
-    private const int LastStepIndex = 43;
+    private const int LastStepIndex = 39;
 
     private void Start()
     {
@@ -136,7 +136,7 @@ public class BottomTutorialController : MonoBehaviour
     {
         if (spraySpawner == null)
         {
-            if (step == 15 || step == 17 || step == 19 || step == 21)
+            if (step == 15 || step == 17 || step == 19 || step == 23)
                 Debug.LogWarning("[BottomTutorialController] SpraySpawner is not assigned.");
 
             return;
@@ -164,7 +164,7 @@ public class BottomTutorialController : MonoBehaviour
 
     private bool IsTaskStep(int step)
     {
-        return step == 15 || step == 17 || step == 19 || step == 23 || step == 25 || step == 29;
+        return step == 12 || step == 15 || step == 17 || step == 19 || step == 23 || step == 25 || step == 29;
     }
 
     private void RefreshTaskHint()
@@ -178,136 +178,124 @@ public class BottomTutorialController : MonoBehaviour
         switch (currentStep)
         {
             case 0:
-                return "Chicago, Herbst 1909. In einem Kellerlabor der University of Chicago untersuchte ich einen einzelnen Öltropfen. Der echte Apparat war viel kleiner als das, was du hier siehst.";
+                return "Ah. Ein Klassenzimmer. Gut. Das kenne ich. Bei uns sahen sie etwas anders aus — aber das Prinzip ist dasselbe. Mein Name ist Robert Andrews Millikan. Ich war Physikprofessor an der University of Chicago — und später am California Institute of Technology.";
 
             case 1:
-                return "Die Messkammer war kaum größer als ein Schuhkarton. In dieser VR-Version ist der Aufbau stark vergrößert, damit du die Platten, die Lichtquelle und die Öltröpfchen besser erkennen und selbst bedienen kannst.";
+                return "Aber egal… Ich habe ein Problem. Oder genauer gesagt: Ich habe eine Frage — und ich brauche jemanden, der mir hilft, sie zu beantworten. Ist elektrische Ladung unteilbar? Gibt es ein kleinstes elektrisches Paket — eine Art Atom der Ladung — oder fließt Elektrizität einfach kontinuierlich, wie Wasser durch einen Schlauch?";
 
             case 2:
-                return "Mein Name ist Robert Andrews Millikan. Ich wollte herausfinden, ob elektrische Ladung beliebig teilbar ist oder ob sie aus kleinsten Einheiten besteht.";
+                return "Ich habe ein Experiment gebaut, das diese Frage beantworten kann. Aber ich kann es nicht alleine durchführen. Dazu brauche ich einen Assistenten — wie dich! Du müsstest die Geräte bedienen, während ich erkläre, was gerade passiert. Außerdem musst du gut aufpassen. Genau wie mein Doktorand Harvey Fletcher damals.";
 
             case 3:
-                return "Mein Doktorand Harvey Fletcher hatte eine entscheidende Idee: Öl statt Wasser. Wasser verdunstet zu schnell. Öltröpfchen bleiben länger stabil.";
+                return "Ausgezeichnet. Dann legen wir los. Komm zum Experiment — ich zeige dir, womit wir es zu tun haben.";
 
             case 4:
-                return "Du übernimmst heute die Rolle meines Assistenten. Du bedienst den Apparat, ich erkläre dir, was dabei geschieht. Wenn wir sorgfältig arbeiten, können wir die Elementarladung sichtbar machen.";
+                return "Gut. Dann fangen wir von vorne an. Ich bin 1868 in Morrison, Illinois geboren. Physik hat mich schon immer fasziniert. Die Frage, woraus Materie wirklich besteht. Was Elektrizität eigentlich ist. Was hinter den Gleichungen steckt.";
 
             case 5:
-                return "Bevor wir messen, sehen wir uns den Aufbau an. Fünf Bestandteile arbeiten zusammen: Zerstäuber, Mikroskop, Lichtquelle, Plattenkondensator und Spannungsquelle.";
+                return "1909 haben mein Doktorand Harvey Fletcher und ich begonnen, diesen Apparat hier zu entwickeln. Fletcher hatte die entscheidende Idee: Statt Wasser — Öl. Unsere Tröpfchen bleiben stundenlang stabil. Das klingt banal. Aber es hat alles verändert.";
 
             case 6:
-                return "Das ist der Zerstäuber. Mit ihm erzeugen wir winzige Öltröpfchen. Beim Zerstäuben laden sich einige Tröpfchen elektrisch auf. Genau solche geladenen Tröpfchen brauchen wir.";
+                return "Was wir herausfinden wollten: Gibt es eine kleinste Einheit elektrischer Ladung — oder ist Elektrizität so etwas wie eine Flüssigkeit, die man beliebig klein aufteilen kann? J.J. Thomson hatte 1897 gezeigt, dass es Elektronen gibt — kleine, negativ geladene Teilchen. Aber wie groß ist ihre Ladung? Das wusste niemand genau. Ich wollte es wissen. Und heute erfährst du, wie ich es gemessen habe.";
 
             case 7:
-                return "Das Mikroskop machte die Tröpfchen im echten Experiment sichtbar. Die Beobachtung war damals schwieriger als hier, denn die Tröpfchen waren viel zu klein, um sie direkt mit bloßem Auge zu sehen.";
+                return "Hier ist er. Mein Apparat. Fünf Dinge arbeiten zusammen — und jedes einzelne ist entscheidend. Ich erkläre dir jede einzelne Komponente nacheinander.";
 
             case 8:
-                return "In dieser VR-Version vereinfachen wir die Beobachtung. Du siehst direkt, ob ein Tröpfchen fällt, schwebt oder steigt.";
+                return "Dieser einfache Zerstäuber — fast wie ein Parfümflakon — ist der Anfang von allem. Ein kurzer Druck, und Millionen winziger Öltröpfchen werden in die Messkammer geblasen. Durch die Reibung beim Zerstäuben laden sich viele davon elektrisch auf. Genau das sind die entscheidenden Öltröpfchen für uns.";
 
             case 9:
-                return "Die Lichtquelle beleuchtet die Kammer von der Seite. Ohne Licht würden wir die Tröpfchen kaum erkennen. Mit Licht erscheinen sie als kleine helle Punkte.";
+                return "Diese Tröpfchen sind viel zu klein, um sie direkt zu sehen. Das Mikroskop macht sie sichtbar — als helle Lichtpunkte auf dunklem Hintergrund. Aber Vorsicht: Das Mikroskop spiegelt das Bild. Was wir sehen, sinkt in Wirklichkeit — es sieht aus, als würde es steigen. Das verwirrt am Anfang. Deshalb haben wir hier in der Simulation die Öltröpfchen für das bloße Auge sichtbar gemacht und wir sehen direkt, ob die Öltröpfchen sinken oder steigen.";
 
             case 10:
-                return "Das ist der Plattenkondensator. Zwischen den beiden Platten entsteht ein elektrisches Feld. Der Abstand beträgt in dieser Simulation 6 Millimeter.";
+                return "Das Licht kommt schräg von der Seite. Ohne es würden wir gar nichts sehen. Die Tröpfchen streuen das Licht wie Staubkörner in einem Sonnenstrahl — plötzlich leuchten sie auf.";
 
             case 11:
-                return "Dieser Regler ist unser wichtigstes Werkzeug. Mit ihm ändern wir die Spannung. Je höher die Spannung, desto stärker wird die elektrische Kraft auf das geladene Tröpfchen.";
+                return "Das Herzstück. Zwei Metallplatten, exakt 6 Millimeter auseinander. Wenn ich eine Spannung anlege, entsteht zwischen ihnen ein elektrisches Feld — gleichmäßig, kontrolliert. Dieses Feld wird auf unsere Tröpfchen wirken. Wie stark, das liegt in unserer Hand. Dieser Regler ist unser wichtigstes Werkzeug. Er bestimmt, wie stark das elektrische Feld zwischen den Platten ist.";
 
             case 12:
-                return "Bevor wir das elektrische Feld benutzen, beobachten wir den Tropfen ohne Feld. Ohne elektrische Kraft fällt er nach unten. Die Schwerkraft zieht ihn zur Erde.";
+                return "Das Feld ist ausgeschaltet. Bitte geh mit deiner Hand zum Zerstäuber und drücke den Trigger.";
 
             case 13:
-                return "Ein kleiner Tropfen fällt in Luft nicht einfach immer schneller. Die Luft bremst ihn. Nach kurzer Zeit fällt er fast mit konstanter Geschwindigkeit.";
+                return "Wie du siehst, werden die ersten Tröpfchen in den Apparat gesprüht. Die Tröpfchen fallen. Langsam — aber sie fallen. Die Schwerkraft zieht sie nach unten. Das ist die erste Kraft, mit der wir es zu tun haben.";
 
             case 14:
-                return "Diese Fallgeschwindigkeit ist wichtig. Sie verrät uns etwas über den Radius des Tröpfchens. Aus dem Radius folgt die Masse, und ohne Masse können wir später die Ladung nicht berechnen.";
+                return "Warum ist das wichtig? Weil sich aus der Fallgeschwindigkeit eines Tröpfchens der Radius r berechnen lässt. Wir benötigen den Radius, um im nächsten Schritt die Ladung bestimmen zu können. Die Dichte des Öls kenne ich — 875 Kilogramm pro Kubikmeter. Die Erdbeschleunigung kennst du. Was ich nicht kenne: den Radius des Tröpfchens. Den messe ich aus der Fallgeschwindigkeit. Schnelleres Fallen bedeutet: größeres Tröpfchen. Einfacher Zusammenhang — aber fundamental wichtig.";
 
             case 15:
-                return "Zuerst erzeugen wir eine Gruppe sehr kleiner Tröpfchen mit r = 0,5 µm. Du musst hier noch keine Spannung einstellen. Beobachte nur, wie langsam diese kleinen Tröpfchen fallen.";
+                return "Stelle nacheinander folgende Tröpfchengrößen ein und beobachte die Fallgeschwindigkeit: r = 0,5 µm — sehr langsam fallend.";
 
             case 16:
-                return "Gut. Diese kleinen Tröpfchen haben nur eine sehr geringe Masse. Die Gewichtskraft ist entsprechend klein, und die Fallbewegung ist langsam.";
+                return "Gut. Kleine Tröpfchen fallen sehr langsam. Der Radius bestimmt, wie schnell ein Tröpfchen fällt.";
 
             case 17:
-                return "Jetzt erzeugen wir eine neue Gruppe mit r = 1,0 µm. Die alten Tröpfchen werden automatisch entfernt. Vergleiche nur die Fallbewegung mit der vorherigen Gruppe.";
+                return "Stelle nun die nächste Tröpfchengröße ein: r = 1,0 µm — mittlere Geschwindigkeit.";
 
             case 18:
-                return "Du siehst: Wenn der Radius größer wird, wächst die Masse deutlich. Für eine Kugel hängt die Masse vom Volumen ab, und das Volumen wächst mit r hoch 3.";
+                return "Du siehst: Wenn der Radius größer wird, fällt das Tröpfchen schneller.";
 
             case 19:
-                return "Nun erzeugen wir eine dritte Gruppe mit r = 1,5 µm. Auch hier musst du noch keine Spannung einstellen. Vergleiche wieder nur die Fallgeschwindigkeit.";
+                return "Stelle nun die dritte Tröpfchengröße ein: r = 1,5 µm — schnell fallend.";
 
             case 20:
-                return "Der Radius ist also nicht nur eine Größenangabe. Er bestimmt die Masse, die Gewichtskraft und die spätere Schwebe-Spannung. Darum ist r ein wichtiger Messwert.";
+                return "Gut. Du verstehst jetzt: Der Radius bestimmt, wie schnell ein Tröpfchen fällt. Und aus der Fallgeschwindigkeit können wir den Radius berechnen. Jetzt kommt der eigentliche Schritt.";
 
             case 21:
                 return "Die Radius-Vergleiche sind abgeschlossen. Für die eigentliche Messung verwenden wir wieder normale, zufällig erzeugte Öltröpfchen.";
 
             case 22:
-                return "Jetzt beginnen wir mit der eigentlichen Messung. Wir brauchen ein geladenes Öltröpfchen im Apparat.";
+                return "Wir sehen einen Regler, um die Spannung im Feld einzustellen. Dreh den Regler mal hoch und achte auf das ausgewählte Tröpfchen. Das Tröpfchen verändert seine Geschwindigkeit. Die elektrische Kraft — die Coulomb-Kraft — wirkt. Je mehr Spannung, desto stärker.";
 
             case 23:
-                return "Erzeuge nun eine neue zufällige Gruppe von Öltröpfchen. Ab jetzt sind Radius und Ladung wieder zufällig, so wie es im echten Experiment auch der Fall wäre.";
+                return "Erzeuge nun eine neue zufällige Gruppe von Öltröpfchen.";
 
             case 24:
-                return "Sehr gut. Jetzt wählen wir ein einzelnes Tröpfchen aus, damit wir seine Bewegung genauer verfolgen können.";
+                return "Dreh den Spannungsregler vor dir langsam nach oben. Schau mal, der grüne Pfeil wächst. Die elektrische Kraft wird stärker. Das Tröpfchen verlangsamt sich. Wenn die Spannung zu hoch wird, dann steigt das Tröpfchen auf einmal.";
 
             case 25:
-                return "Wähle nun ein Tröpfchen mit dem roten Strahl aus. Sobald es ausgewählt ist, können wir seine Daten sehen und die Spannung einstellen.";
+                return "Wähle nun ein Tröpfchen mit dem roten Strahl aus.";
 
             case 26:
-                return "Jetzt sehen wir Radius, Masse, Ladung und Spannung des ausgewählten Tröpfchens. Diese Werte gehören zu genau diesem einen Tropfen.";
+                return "Versuch es mal so einzustellen, dass du es zum Schweben bringst. So, dass das Tröpfchen hängt, als würde die Zeit stillstehen. Das elektrische Feld hält es exakt gegen die Schwerkraft. Die beiden Kräfte heben sich exakt auf.";
 
             case 27:
-                return "Wenn wir eine Spannung anlegen, entsteht zwischen den Platten ein elektrisches Feld. Auf ein geladenes Tröpfchen wirkt dann eine elektrische Kraft.";
+                return "Und aus diesem Gleichgewicht folgt alles. Wenn das Tröpfchen schwebt, weiß ich: Die elektrische Kraft ist gleich der Schwerkraft. Ich kenne die Masse — aus dem Radius, den wir gerade gemessen haben. Ich kenne den Plattenabstand: 6 Millimeter. Und die Spannung lese ich ab. Damit berechne ich die Ladung q.";
 
             case 28:
-                return "Beobachte die Kräfte: Die Gewichtskraft zeigt nach unten. Der Auftrieb und die elektrische Kraft zeigen nach oben. Wenn die oberen Kräfte zusammen gleich groß sind wie die Gewichtskraft, schwebt der Tropfen.";
+                return "q ist die Ladung des Tröpfchens in Coulomb. U ist die Spannung am Kondensator in Volt. d ist der Plattenabstand in Meter. m ist die Masse des Tröpfchens in Kilogramm. g ist die Erdbeschleunigung. E ist die elektrische Feldstärke.";
 
             case 29:
-                return "Stelle nun die Spannung so ein, dass das Tröpfchen schwebt. Fällt es, ist die elektrische Kraft zu klein. Steigt es, ist sie zu groß. Dein Ziel ist der Schwebezustand.";
+                return "Stelle nun die Spannung so ein, dass das ausgewählte Tröpfchen möglichst schwebt.";
 
             case 30:
-                return "Sehr gut. Jetzt schwebt das Tröpfchen. Das bedeutet: Die elektrische Kraft gleicht die Gewichtskraft aus.";
+                return "Das war deine erste Ladungsmessung. Aber eine Messung ist noch keine Wissenschaft — das ist nur ein Datenpunkt. Was ich brauche, ist ein Muster.";
 
             case 31:
-                return "Aus diesem Gleichgewicht folgt die Ladung. Wenn der Tropfen schwebt, gilt F_el = F_G. Daraus folgt: q = m · g · d / U.";
+                return "Ich habe nicht ein Tröpfchen gemessen. Ich habe hunderte gemessen. Über Monate. Und dabei etwas Erstaunliches beobachtet: Die Ladungen, die ich gemessen habe, waren nie zufällig verteilt. Sie häuften sich immer an denselben Stellen. Immer ein Vielfaches derselben Grundeinheit. Einfach. Doppelt. Dreifach. Viermal. Nie dazwischen. Die Natur schien zu zählen — in ganzen Zahlen.";
 
             case 32:
-                return "Eine Messung allein reicht nicht. Ich habe viele Tröpfchen gemessen, nicht eines und nicht zehn, sondern Hunderte.";
+                return "Elektrische Ladung ist nicht kontinuierlich. Sie kommt in Paketen. Das kleinste Paket — das ist die Elementarladung e. Jedes Tröpfchen trägt genau ein, zwei, drei oder mehr dieser Pakete. Nie einen Bruchteil. Das nenne ich Ladungsquantisierung.";
 
             case 33:
-                return "Jedes Tröpfchen liefert eine Ladung q. Wenn man viele Werte sammelt, entsteht ein Muster.";
+                return "Siehst du es? Die Ladungen häufen sich. Nicht zufällig — bei bestimmten Werten. Bei ganzzahligen Vielfachen. Das Muster wird sichtbar. Das ist Wissenschaft. Nicht eine Messung — sondern ein Muster aus vielen Messungen. Und das Muster ist eindeutig: Elektrische Ladung ist gequantelt. Es gibt eine kleinste Einheit.";
 
             case 34:
-                return "Die Ladungen liegen nicht beliebig verteilt. Sie erscheinen als Vielfache desselben Grundwertes: einmal, zweimal, dreimal. Nie dazwischen.";
+                return "Ich muss dir etwas zeigen. Etwas, das 1978 ein Historiker namens Gerald Holton entdeckt hat — in meinen Original-Notizbüchern aus den Jahren 1911 und 1912. Er fand heraus, dass ich weit mehr Tröpfchen gemessen hatte als ich je veröffentlicht habe.";
 
             case 35:
-                return "Die Natur zählt hier in ganzen Zahlen. Elektrische Ladung ist nicht kontinuierlich, sondern gequantelt. Das kleinste Paket nennen wir Elementarladung: e.";
+                return "Neben manchen Datenpunkten standen meine handschriftlichen Anmerkungen: 'Won't work'. 'Schiefe Messung'. 'Error — discard'. War das falsch? Ich glaube: Nein. Ich habe Messungen ausgeschlossen, bei denen ich technische Fehler erkannt habe — Luftzug, Erschütterungen, einen zitternden Tropfen. Das ist kein Betrug. Das ist Urteilsvermögen.";
 
             case 36:
-                return "Heute wissen wir: e beträgt ungefähr 1,602 x 10^-19 Coulomb. Jedes Tröpfchen trägt ein ganzzahliges Vielfaches davon: 1e, 2e, 3e und so weiter.";
+                return "Aber der Historiker Allan Franklin hat 1981 gezeigt: Die Daten, die ich wegließ, hätten meinen Endwert kaum verändert. Nur die statistische Unsicherheit wäre größer geworden — von 0,2 Prozent auf fast 2 Prozent. Die Selektion hat meine Präzision verbessert, aber nicht mein Ergebnis.";
 
             case 37:
-                return "Viele Jahre später untersuchte der Wissenschaftshistoriker Gerald Holton meine Originalnotizbücher. Er fand mehr Messungen, als ich veröffentlicht hatte.";
+                return "Die Frage, wann Datenselektion legitim ist, beschäftigt Wissenschaftler bis heute. Es gibt keine einfache Antwort. Aber es gibt eine klare Anforderung: Transparenz. Was ich ausschließe — und warum — das muss dokumentiert sein.";
 
             case 38:
-                return "Manche Messungen waren technisch fehlerhaft: Luftzug, Erschütterung oder ein zitternder Tropfen. Solche Daten auszuschließen kann wissenschaftlich begründet sein.";
+                return "Es war 1913. Ich publizierte meinen Endwert: e = 1,592 mal zehn hoch minus neunzehn Coulomb. Unsicherheit: 0,2 Prozent. Es ist die genaueste Messung der Elementarladung, die es bis dahin gibt. Der heute akzeptierte Wert ist 1,602 — die Abweichung kommt aus einem leicht falschen Literaturwert für die Luftviskosität, den ich damals verwendet habe. Nicht aus meiner Methode.";
 
             case 39:
-                return "Später zeigte Allan Franklin, dass die ausgelassenen Werte den Endwert kaum verändert hätten. Aber die Unsicherheit wäre größer gewesen. Deshalb ist Transparenz wichtig.";
-
-            case 40:
-                return "1913 veröffentlichte ich meinen Messwert für die Elementarladung: e = 1,592 x 10^-19 Coulomb. Der heute akzeptierte Wert liegt bei etwa 1,602 x 10^-19 Coulomb.";
-
-            case 41:
-                return "1923 erhielt ich dafür den Nobelpreis für Physik. Aber das Wichtigste war nicht nur die Zahl. Das Wichtigste war der Nachweis, dass elektrische Ladung gequantelt ist.";
-
-            case 42:
-                return "Auch Harvey Fletcher gehört zu dieser Geschichte. Ohne seine Idee, Öl statt Wasser zu verwenden, wäre dieser Versuch kaum möglich gewesen.";
-
-            case 43:
-                return "Heute hast du gesehen, wie aus einem schwebenden Tropfen ein Beweis für eine grundlegende Eigenschaft der Natur wird. Das ist die Idee der Elementarladung.";
+                return "Aber der eigentliche Beitrag ist nicht die Zahl. Es ist das Prinzip. Elektrische Ladung ist gequantelt. Es gibt keine halbe Elementarladung. Keine viertel Elementarladung. Die Natur zählt in ganzen Zahlen. Das ist fundamental. Das ist eine der tiefsten Strukturen der Materie. Ich danke dir dafür. Du hast heute sehr viel gelernt, lass uns jetzt mal schauen, wie viel du davon behalten hast.";
 
             default:
                 return "";
@@ -318,23 +306,26 @@ public class BottomTutorialController : MonoBehaviour
     {
         switch (currentStep)
         {
+            case 12:
+                return "Aufgabe: Zerstäuber benutzen.\nRichte auf den Zerstäuber.\nDrücke den Trigger.";
+
             case 15:
-                return "Aufgabe: Sprühe eine Gruppe mit r = 0,5 µm.\nRichte auf den Zerstäuber.\nDrücke den Trigger.";
+                return "Aufgabe: r = 0,5 µm.\nErzeuge eine Gruppe kleiner Tröpfchen.\nDrücke den Trigger.";
 
             case 17:
-                return "Aufgabe: Sprühe eine Gruppe mit r = 1,0 µm.\nRichte auf den Zerstäuber.\nDrücke den Trigger.";
+                return "Aufgabe: r = 1,0 µm.\nErzeuge die nächste Tröpfchengruppe.\nDrücke den Trigger.";
 
             case 19:
-                return "Aufgabe: Sprühe eine Gruppe mit r = 1,5 µm.\nRichte auf den Zerstäuber.\nDrücke den Trigger.";
+                return "Aufgabe: r = 1,5 µm.\nErzeuge die dritte Tröpfchengruppe.\nDrücke den Trigger.";
 
             case 23:
-                return "Aufgabe: Sprühe eine zufällige Gruppe.\nRichte auf den Zerstäuber.\nDrücke den Trigger.";
+                return "Aufgabe: Zufällige Öltröpfchen erzeugen.\nRichte auf den Zerstäuber.\nDrücke den Trigger.";
 
             case 25:
-                return "Aufgabe: Wähle ein Öltröpfchen aus.\nZiele mit dem roten Strahl darauf.\nDrücke den Trigger.";
+                return "Aufgabe: Tröpfchen auswählen.\nZiele mit dem roten Strahl auf ein Tröpfchen.\nDrücke den Trigger.";
 
             case 29:
-                return "Aufgabe: Stelle die Schwebe-Spannung ein.\nGreife den Spannungsregler.\nMit X kannst du feiner nachregeln.";
+                return "Aufgabe: Spannung einstellen.\nGreife den Spannungsregler.\nStelle das Tröpfchen möglichst ruhig ein.";
 
             default:
                 return "A: Weiter";
@@ -347,11 +338,12 @@ public class BottomTutorialController : MonoBehaviour
 
         switch (step)
         {
-            case 5:
+            case 7:
                 if (arrowSetup != null) arrowSetup.SetActive(true);
                 break;
 
-            case 6:
+            case 8:
+            case 12:
             case 15:
             case 17:
             case 19:
@@ -359,18 +351,18 @@ public class BottomTutorialController : MonoBehaviour
                 if (arrowSprayer != null) arrowSprayer.SetActive(true);
                 break;
 
-            case 9:
+            case 10:
                 if (arrowLight != null) arrowLight.SetActive(true);
                 break;
 
-            case 10:
-            case 12:
+            case 11:
+            case 22:
             case 27:
             case 28:
                 if (arrowCapacitor != null) arrowCapacitor.SetActive(true);
                 break;
 
-            case 11:
+            case 24:
             case 29:
                 if (arrowVoltageKnob != null) arrowVoltageKnob.SetActive(true);
                 break;
@@ -396,7 +388,7 @@ public class BottomTutorialController : MonoBehaviour
         if (!tutorialSessionActive)
             return;
 
-        if (currentStep == 15 || currentStep == 17 || currentStep == 19 || currentStep == 23)
+        if (currentStep == 12 || currentStep == 15 || currentStep == 17 || currentStep == 19 || currentStep == 23)
             NextStep();
     }
 
